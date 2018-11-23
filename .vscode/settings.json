@@ -1,0 +1,6 @@
+{
+  "terminal.integrated.env.osx": {
+    "PATH": "/Users/davidosmith/.platformio/penv/bin:/Users/davidosmith/.platformio/penv:/usr/local/bin:/Library/Frameworks/Python.framework/Versions/3.5/bin:/Library/Frameworks/Python.framework/Versions/3.5/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/Users/davidosmith/.nexustools",
+    "PLATFORMIO_CALLER": "vscode"
+  }
+}
