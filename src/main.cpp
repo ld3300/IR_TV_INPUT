@@ -12,6 +12,8 @@
 #define MY_BITS 32
 #define MY_INPUT 0x20DFF40B             // Vizio tv switch inputs
 
+uint32_t irCode = 0x20DFF000;
+
 unsigned long circle_color = 0;           // Store circle current color for iterating
 unsigned long lastTime = 0;               // For keeping track of pixel color timeout
 
@@ -46,6 +48,7 @@ void CheckIR(){                                       // Decode results from IR 
 }
 
 void setup() {
+  Serial.begin(115200);
   CircuitPlayground.begin();
   CircuitPlayground.irReceiver.enableIRIn(); // Start the receiver
   // IR_protocol=0; //  Indicates we've not received a code yet
@@ -58,9 +61,13 @@ void loop() {
   }
   CheckIR();
   if (CircuitPlayground.leftButton() || CircuitPlayground.rightButton()) {  // For testing
-    CircuitPlayground.irSend.send(MY_PROTOCOL,MY_INPUT,MY_BITS);
+    CircuitPlayground.irSend.send(MY_PROTOCOL,irCode,MY_BITS);
     SetPixelColor(false);
     while (CircuitPlayground.leftButton()) {}//wait until button released
+    while (CircuitPlayground.rightButton()) {}
+    Serial.println(irCode, HEX);
+    irCode ++;
+    delay(100); // to eat debounce
   }
 }
 
