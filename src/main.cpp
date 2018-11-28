@@ -1,3 +1,16 @@
+/*////////////////////////////////////////////////
+Vizio TV Commands
+Syntax is:
+1st byte - device ID
+2nd byte - device ID logical inverse
+3rd byte - command
+4th byte - command logical inverse
+
+Device ID is 0x20
+
+0xF4 Switch inputs
+*/
+
 #include <Arduino.h>
 
 #include <Adafruit_CircuitPlayground.h>
@@ -8,9 +21,9 @@
 
 #define LEDONTIME 1000                    // Turn off LEDs after this time
 
-#define MY_PROTOCOL NECX                // Vizio TV Remote Protocol
+#define MY_PROTOCOL NECX                  // Vizio TV Remote Protocol
 #define MY_BITS 32
-#define MY_INPUT 0x20DFF40B             // Vizio tv switch inputs
+#define MY_INPUT 0x20DFF40B               // Vizio tv switch inputs
 
 uint32_t irCode = 0x20DF00FF;
 uint8_t irCommand = 0x00;
@@ -55,7 +68,7 @@ void setup() {
   // IR_protocol=0; //  Indicates we've not received a code yet
 }
 
-// This will incriment through each of 256 commands on each button press
+// This will increment through each of 256 commands on each button press
 void loop() {
   if(millis() > lastTime + LEDONTIME){      // After 1 second turn LEDs off
     SetPixelColor(true);
