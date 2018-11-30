@@ -1,8 +1,12 @@
 {
 	"folders": [
-		{
-			"path": "."
-		}
+    {
+      "path": "."
+    },
+    {
+      "path": "/Users/davidosmith/softdev/IR_TV_OkGoogle",
+      "name": "IR_TV_OkGoogle"
+    }
   ],
   "settings": {
     "terminal.integrated.env.osx": {

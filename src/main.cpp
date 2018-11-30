@@ -15,6 +15,15 @@
 unsigned long circle_color = 0;           // Store circle current color for iterating
 unsigned long lastTime = 0;               // For keeping track of pixel color timeout
 
+// void receiveCommand(){                        // Command to see if data present for remote command
+//   char temp[30];
+//     Serial.readBytes(temp,5);
+//     if(temp[0] == 'c'){                         // use
+
+//     }
+//     return temp;
+//   }
+// }
 
 void SetPixelColor(bool clearAll){                    // Set each pixel to a random color (if clearAll false)
   for(int i = 0; i < 10; i++){
@@ -62,5 +71,7 @@ void loop() {
     SetPixelColor(false);
     while (CircuitPlayground.leftButton()) {}//wait until button released
   }
+  // if(Serial.available()) uint8_t tCom = receiveCommand();
+
 }
 
