@@ -1,42 +1,84 @@
-#include <Arduino.h>
 
+#include <Arduino.h>
 #include <Adafruit_CircuitPlayground.h>
+#include "codes.h"
 
 #if !defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
   #error "Infrared support is only for the Circuit Playground Express, it doesn't work with the Classic version"
 #endif
 
+// User Variables //
 #define LEDONTIME 1000                    // Turn off LEDs after this time
+#define IR_PROTOCOL NECX                  // Vizio TV Remote Protocol
+#define TV_ID 0x20DF0000               // Vizio tv product rx ID
+#define NUM_BITS 32
 
-#define MY_PROTOCOL NECX                // Vizio TV Remote Protocol
-#define MY_BITS 32
-#define MY_INPUT 0x20DFF40B             // Vizio tv switch inputs
+#define IR_RX_PROTOCOL SONY
+#define IR_RX_VALUE 682823
+#define IR_RX_BITS 20
 
+// constant variables //
 unsigned long circle_color = 0;           // Store circle current color for iterating
 unsigned long lastTime = 0;               // For keeping track of pixel color timeout
 
-void receiveCommand(){                        // Command to see if data present for remote command
+// Functions //
+uint8_t receiveCommand(){                 // analyze data from esp module
   char temp[30];
-    Serial.readBytes(temp, 30);
-    if(temp[0] == 'esp'){                         // if message from esp to circuit playground
-      
+  uint8_t code = 0;                         // store return code.  Return 0 if no code received
+  Serial.readBytes(temp, 30);
+  if (strncmp(temp, "esp", 3) == 0){         // if message from esp to circuit playground
+    memmove(temp, temp+3, sizeof temp - sizeof *temp);
+    for (int i = 0; temp[i]; i++){
+      if((temp[i] & 0xDF >= 'a' ) && (temp[i] & 0xDF <= 'z' )){
+        temp[i] &= 0b11011111;
+      }
     }
-    return temp;
+    if(temp == "ON"){
+      code = POWERONOFF;
+    }
+    else if(temp == "OFF"){
+      code = POWEROFF;
+    }
+    else if(temp == "HDMI 1"){
+      code = HDMI1;
+    }
+    else if(temp == "HDMI 2"){
+      code = HDMI2;
+    }
+    else if(temp == "HDMI 3"){
+      code = HDMI3;
+    }
+    else if(temp == "HDMI 4"){
+      code = HDMI4;
+    }
+    else{
+      code = 0;
+    }
   }
+  return code;
 }
 
-void SetPixelColor(bool clearAll){                    // Set each pixel to a random color (if clearAll false)
+void SetPixelColor(bool clearAll){        // Set each pixel to a random color (if clearAll false)
+  circle_color += random(0x00, 0xFFFFFF);
   for(int i = 0; i < 10; i++){
-    circle_color += random(0x00, 0xFFFFFF);
     unsigned long color = clearAll ? 0x00 : circle_color;
     CircuitPlayground.setPixelColor(i, color & 0xFFFFFF);
     lastTime = millis();
   }
 }
 
+void SendIR(uint8_t command){
+  // Serial.println(command, HEX);
+  char buffer[200];
+  sprintf(buffer, "irCommand: %#X test: %#X\n", command, (TV_ID & 0xFFFF0000) + (command << 8)+ (~command & 0xFF));
+  Serial.print(buffer);
+  uint32_t irCode = (TV_ID & 0xFFFF0000) + (command << 8) + (~command & 0xFF);
+  CircuitPlayground.irSend.send(IR_PROTOCOL, irCode, NUM_BITS);
+}
+
 void CheckInput(uint8_t IR_protocol, uint32_t IR_value, uint16_t IR_bits){    // Check if Input command received
-  if(IR_protocol == SONY && IR_value == 682823 && IR_bits == 20){       // Received signal from dish remote
-    CircuitPlayground.irSend.send(MY_PROTOCOL,MY_INPUT,MY_BITS);
+  if(IR_protocol == IR_RX_PROTOCOL && IR_value == IR_RX_VALUE && IR_bits == IR_RX_BITS){       // Received signal from dish remote
+    SendIR(HDMINEXT);
     SetPixelColor(false);
   }
 }
@@ -55,23 +97,26 @@ void CheckIR(){                                       // Decode results from IR 
 }
 
 void setup() {
+  Serial.begin(119200);
   CircuitPlayground.begin();
   CircuitPlayground.irReceiver.enableIRIn(); // Start the receiver
   // IR_protocol=0; //  Indicates we've not received a code yet
 }
 
-
 void loop() {
-  if(millis() > lastTime + LEDONTIME){      // After 1 second turn LEDs off
-    SetPixelColor(true);
-  }
+  if(millis() > lastTime + LEDONTIME) SetPixelColor(true);    // clear LEDs after 1 second
   CheckIR();
-  if (CircuitPlayground.leftButton() || CircuitPlayground.rightButton()) {  // For testing
-    CircuitPlayground.irSend.send(MY_PROTOCOL,MY_INPUT,MY_BITS);
-    SetPixelColor(false);
-    while (CircuitPlayground.leftButton()) {}//wait until button released
+  if(Serial.available()){ 
+    if(uint8_t tCom = receiveCommand()){      // if we get a non 0 response from the esp
+      SendIR(tCom);
+      SetPixelColor(false);
+    }
   }
-  if(Serial.available()) uint8_t tCom = receiveCommand();
 
+  // if (CircuitPlayground.leftButton() || CircuitPlayground.rightButton()) {  // For testing
+  //   CircuitPlayground.irSend.send(MY_PROTOCOL,MY_INPUT,MY_BITS);
+  //   SetPixelColor(false);
+  //   while (CircuitPlayground.leftButton()) {}//wait until button released
+  // }
 }
 
