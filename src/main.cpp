@@ -10,7 +10,7 @@
 
 #define MY_PROTOCOL NECX                // Vizio TV Remote Protocol
 #define MY_BITS 32
-#define MY_INPUT 0x20DFF40B             // Vizio tv switch inputs
+#define MY_INPUT 0x20DF649B             // Vizio tv switch inputs
 
 unsigned long circle_color = 0;           // Store circle current color for iterating
 unsigned long lastTime = 0;               // For keeping track of pixel color timeout
