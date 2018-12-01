@@ -22,11 +22,22 @@ unsigned long circle_color = 0;           // Store circle current color for iter
 unsigned long lastTime = 0;               // For keeping track of pixel color timeout
 
 // Functions //
+void SetPixelColor(bool clearAll){        // Set each pixel to a random color (if clearAll false)
+  circle_color += random(0x00, 0xFFFFFF);
+  for(int i = 0; i < 10; i++){
+    unsigned long color = clearAll ? 0x00 : circle_color;
+    CircuitPlayground.setPixelColor(i, color & 0xFFFFFF);
+    lastTime = millis();
+  }
+}
+
 uint8_t receiveCommand(){                 // analyze data from esp module
   char temp[30];
   uint8_t code = 0;                         // store return code.  Return 0 if no code received
   Serial.readBytes(temp, 30);
+  // Serial.println()
   if (strncmp(temp, "esp", 3) == 0){         // if message from esp to circuit playground
+    SetPixelColor(false);
     memmove(temp, temp+3, sizeof temp - sizeof *temp);
     for (int i = 0; temp[i]; i++){
       if((temp[i] & 0xDF >= 'a' ) && (temp[i] & 0xDF <= 'z' )){
@@ -56,15 +67,6 @@ uint8_t receiveCommand(){                 // analyze data from esp module
     }
   }
   return code;
-}
-
-void SetPixelColor(bool clearAll){        // Set each pixel to a random color (if clearAll false)
-  circle_color += random(0x00, 0xFFFFFF);
-  for(int i = 0; i < 10; i++){
-    unsigned long color = clearAll ? 0x00 : circle_color;
-    CircuitPlayground.setPixelColor(i, color & 0xFFFFFF);
-    lastTime = millis();
-  }
 }
 
 void SendIR(uint8_t command){
@@ -97,7 +99,7 @@ void CheckIR(){                                       // Decode results from IR 
 }
 
 void setup() {
-  Serial.begin(119200);
+  Serial.begin(115200);
   CircuitPlayground.begin();
   CircuitPlayground.irReceiver.enableIRIn(); // Start the receiver
   // IR_protocol=0; //  Indicates we've not received a code yet
@@ -107,10 +109,8 @@ void loop() {
   if(millis() > lastTime + LEDONTIME) SetPixelColor(true);    // clear LEDs after 1 second
   CheckIR();
   if(Serial.available()){ 
-    if(uint8_t tCom = receiveCommand()){      // if we get a non 0 response from the esp
-      SendIR(tCom);
-      SetPixelColor(false);
-    }
+    uint8_t tCom = receiveCommand();
+    SendIR(tCom);
   }
 
   // if (CircuitPlayground.leftButton() || CircuitPlayground.rightButton()) {  // For testing
