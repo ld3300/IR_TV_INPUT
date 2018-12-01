@@ -35,7 +35,7 @@ void CheckInput(uint8_t IR_protocol, uint32_t IR_value, uint16_t IR_bits){    //
 void CheckIR(){                                       // Decode results from IR remote
   if(CircuitPlayground.irReceiver.getResults()) { 
     if(CircuitPlayground.irDecoder.decode()) {
-      CircuitPlayground.irDecoder.dumpResults(false);
+      CircuitPlayground.irDecoder.dumpResults(false); // print results
       uint8_t IR_protocol = CircuitPlayground.irDecoder.protocolNum;
       uint32_t IR_value = CircuitPlayground.irDecoder.value;
       uint16_t IR_bits = CircuitPlayground.irDecoder.bits;
@@ -46,6 +46,7 @@ void CheckIR(){                                       // Decode results from IR 
 }
 
 void setup() {
+  Serial.begin(115200);
   CircuitPlayground.begin();
   CircuitPlayground.irReceiver.enableIRIn(); // Start the receiver
   // IR_protocol=0; //  Indicates we've not received a code yet
