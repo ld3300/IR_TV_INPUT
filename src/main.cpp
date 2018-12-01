@@ -24,6 +24,7 @@ Device ID is 0x20
 0x4A Function not available
 0x4C Function not available
 0x52 Function not available
+0x54 TV On
 0x58 switch to last input
 0x5A Input Component
 0x64 Next HDMI Input (cycles HDMIs)
