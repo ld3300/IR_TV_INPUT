@@ -26,6 +26,7 @@ Device ID is 0x20
 // 0x4A Function not available
 // 0x4C Function not available
 // 0x52 Function not available
+#define POWERON            0x64  // TV On
 // 0x58 switch to last input
 #define COMPONENTINPUT  0x5A  // Input Component
 #define HDMINEXT        0x64  // Next HDMI Input (cycles HDMIs)
